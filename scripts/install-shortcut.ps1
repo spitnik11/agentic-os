@@ -30,10 +30,11 @@ $startMenuDir = Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'
 
 $startLink = Join-Path $desktop 'Agentic OS.lnk'
 $stopLink  = Join-Path $desktop 'Stop Agentic OS.lnk'
+$webLink   = Join-Path $desktop 'Agentic OS (Browser).lnk'
 $menuLink  = Join-Path $startMenuDir 'Agentic OS.lnk'
 
 if ($Remove) {
-    foreach ($link in @($startLink, $stopLink, $menuLink)) {
+    foreach ($link in @($startLink, $stopLink, $webLink, $menuLink)) {
         if (Test-Path $link) {
             Remove-Item $link -Force
             Write-Host "  Removed $link" -ForegroundColor Gray
@@ -80,17 +81,20 @@ Write-Host ''
 Write-Host '  Installing Agentic OS shortcuts' -ForegroundColor White
 Write-Host ''
 
-New-Shortcut -Path $startLink -ScriptName 'start-app.ps1' `
+New-Shortcut -Path $startLink -ScriptName 'start-desktop.ps1' `
     -Description 'Open Agentic OS - a visual command center for your Obsidian vault'
 
 New-Shortcut -Path $stopLink -ScriptName 'stop-app.ps1' `
     -Description 'Stop the Agentic OS server'
 
+New-Shortcut -Path $webLink -ScriptName 'start-desktop.ps1' -Arguments '-Web' `
+    -Description 'Open Agentic OS in a web browser instead of the app window'
+
 if ($StartMenu) {
     if (-not (Test-Path $startMenuDir)) {
         New-Item -ItemType Directory -Path $startMenuDir -Force | Out-Null
     }
-    New-Shortcut -Path $menuLink -ScriptName 'start-app.ps1' `
+    New-Shortcut -Path $menuLink -ScriptName 'start-desktop.ps1' `
         -Description 'Open Agentic OS - a visual command center for your Obsidian vault'
 }
 

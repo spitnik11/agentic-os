@@ -9,17 +9,38 @@ visualizes — without taking ownership of your notes.
 
 ## Everyday use
 
-Double-click **Agentic OS** on your desktop. It opens in your browser.
+Double-click **Agentic OS** on your desktop. It opens as a desktop application
+in its own window — not a browser tab.
 
-Double-click **Stop Agentic OS** when you are finished.
+| Shortcut | What it opens |
+|---|---|
+| **Agentic OS** | The desktop application window |
+| **Agentic OS (Browser)** | The same app in a browser tab, for when you want it there |
+| **Stop Agentic OS** | Stops a server left running by browser mode |
 
-The launcher handles the rest: it installs dependencies if they are missing,
-rebuilds when the source has changed, picks another port if 3000 is taken, and
-opens the existing window instead of starting a second copy if the app is
-already running.
+The launcher installs dependencies if they are missing, rebuilds when the source
+has changed, and focuses the existing window rather than starting a second copy.
 
-There is nothing to remember and no terminal to keep open — the app keeps
-running after the launcher window closes.
+Quitting the window shuts the background server down with it, so **Stop Agentic
+OS** is only needed for browser mode.
+
+### How desktop mode works
+
+The desktop build does not reimplement anything. Electron starts the same
+production server that browser mode uses, on a **loopback-only** port, waits for
+its health check, then puts a native window in front of it. Everything the
+server enforces — the write boundary, the fail-closed privacy policy, the
+provenance rules — is unchanged.
+
+Two consequences worth knowing:
+
+- **Desktop mode is more private than browser mode.** It binds to `127.0.0.1`
+  only. Browser mode binds to all interfaces, which means the vault is reachable
+  from other machines on your network while it runs.
+- **No separate Node install is needed.** Electron bundles Node 24, which
+  includes the `node:sqlite` module the app depends on. The app checks this at
+  startup and falls back to a system Node if a future Electron ever ships one
+  older than 22.5.
 
 ## Creating the shortcuts
 
@@ -113,8 +134,12 @@ The database is an index, not a source of truth. Delete it and run
 
 | Command | What it does |
 |---|---|
-| `.\scripts\start-app.ps1` | What the desktop shortcut runs: build if needed, start, open browser |
-| `.\scripts\start-app.ps1 -Dev` | Same, but development mode with hot reload |
+| `npm run desktop` | Run the desktop app directly, with startup output visible |
+| `npm run desktop:build` | Build a Windows installer into `release/` |
+| `.\scripts\start-desktop.ps1` | What the desktop shortcut runs |
+| `.\scripts\start-desktop.ps1 -Web` | Browser mode instead |
+| `.\scripts\start-app.ps1` | Browser mode: build if needed, start, open browser |
+| `.\scripts\start-app.ps1 -Dev` | Browser mode with hot reload |
 | `.\scripts\stop-app.ps1` | Stop the running server |
 | `.\scripts\install-shortcut.ps1` | (Re)create the desktop shortcuts |
 | `npm run dev` | Start the development server on port 3000 |

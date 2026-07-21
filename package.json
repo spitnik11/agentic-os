@@ -21,7 +21,9 @@
     "index": "tsx scripts/reindex.ts",
     "doctor": "tsx scripts/doctor.ts",
     "demo:seed": "tsx scripts/demo-seed.ts",
-    "demo:reset": "tsx scripts/demo-reset.ts"
+    "demo:reset": "tsx scripts/demo-reset.ts",
+    "desktop": "electron .",
+    "desktop:build": "npm run build && electron-builder --win --publish never"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -38,10 +40,48 @@
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.23.1",
     "typescript": "^5.7.3",
     "vitest": "^3.2.7"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.spitnik11.agentic-os",
+    "productName": "Agentic OS",
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "package.json",
+      "src/infrastructure/db/schema.sql"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/agentic-os.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Agentic OS"
+    }
   }
 }

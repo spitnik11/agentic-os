@@ -10,6 +10,11 @@ Verified on 2026-07-21 against the real vault (38 markdown files).
 
 | Capability | Evidence |
 |---|---|
+| **Native desktop application (Electron)** | Window titled "Agentic OS" opens in ~1s from the desktop shortcut |
+| Desktop server is loopback-only | Listener on `127.0.0.1` only; 0 non-loopback bindings |
+| `node:sqlite` under Electron's runtime | Electron 43 bundles Node 24.18.0; in-memory insert/read roundtrip verified |
+| Clean desktop shutdown | After quit: 0 electron processes, 0 listeners, 0 orphaned servers |
+| Browser mode still works alongside it | `start-desktop.ps1 -Web` -> HTTP 200 |
 | Vault indexing, read-only | `npm run index` → 38 scanned, 38 indexed, 0 failed |
 | Content hashing, incremental reindex | integration test: second pass reports 3 unchanged, 0 indexed |
 | Frontmatter parsing (scalars, lists, quoting, BOM) | 20 unit tests |
@@ -35,7 +40,7 @@ Verified on 2026-07-21 against the real vault (38 markdown files).
 | Doctor diagnostics | 12 checks, all passing |
 | Production build | `npm run build` succeeds |
 | Type checking | `tsc --noEmit` clean, strict mode |
-| Tests | 63 passing (43 unit, 20 integration) |
+| Tests | 97 passing (52 unit, 45 integration) |
 
 ## Built but not yet exercised
 
@@ -69,7 +74,12 @@ Deferred, in rough order of how much they are missed:
    The header says "Private vault" because there is currently only one mode.
 10. **Skills registry.** Not started.
 11. **E2E test suite.** Unit and integration only.
-12. **Tauri desktop shell.** Browser only.
+12. **Tauri desktop shell.** Electron is what shipped. Tauri would produce a
+    far smaller binary and WebView2 is already present on this machine, but it
+    needs a Rust toolchain that is not installed. Recorded as a future option.
+13. **Packaged installer not verified.** `npm run desktop:build` and the
+    electron-builder config exist, but the resulting NSIS installer has not been
+    built or tested. Desktop mode currently runs from the source folder.
 
 ## Known defects
 
