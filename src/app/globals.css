@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Colour system.
+ *
+ * Cool graphite neutrals with a single warm brass accent. One accent, used
+ * sparingly, so that when something is highlighted it means something. Status
+ * colours are never the only signal: every badge also carries a glyph or word.
+ */
+
+:root {
+  --canvas: 250 250 249;
+  --surface: 255 255 255;
+  --raised: 245 245 244;
+  --line: 231 229 228;
+  --line-strong: 214 211 209;
+  --ink: 28 25 23;
+  --ink-muted: 87 83 78;
+  /* Must clear 4.5:1 against --raised, not just --canvas: this is the colour of
+     paths, timestamps, counts, and every .eyebrow, all set at 11-12px. */
+  --ink-faint: 105 99 94;
+  --accent: 161 98 7;
+  --accent-soft: 254 243 199;
+  --positive: 21 128 61;
+  --caution: 180 83 9;
+  --critical: 185 28 28;
+  --info: 29 78 216;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Consolas, monospace;
+
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: 12 12 13;
+  --surface: 24 24 26;
+  --raised: 32 32 35;
+  --line: 45 45 49;
+  --line-strong: 63 63 68;
+  --ink: 237 235 233;
+  --ink-muted: 161 157 152;
+  /* Dark mode failed AA on all three surfaces at the previous value (3.5-4.2:1). */
+  --ink-faint: 154 149 144;
+  --accent: 217 153 62;
+  --accent-soft: 68 48 16;
+  --positive: 74 165 105;
+  --caution: 214 150 62;
+  --critical: 226 106 106;
+  --info: 116 158 230;
+
+  color-scheme: dark;
+}
+
+* {
+  border-color: rgb(var(--line));
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: rgb(var(--canvas));
+  color: rgb(var(--ink));
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Focus is always visible and always the same shape. */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+/* Remove the ring only where a component draws its own equally visible one. */
+.focus-none:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbars sized for a dense tool rather than a document. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--line-strong));
+  border-radius: 5px;
+  border: 2px solid rgb(var(--canvas));
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ink-faint));
+}
+
+@layer components {
+  /* Section label used above dense regions. */
+  .eyebrow {
+    @apply text-2xs font-medium uppercase tracking-[0.08em] text-ink-faint;
+  }
+
+  /* Base for a keyboard-navigable row in a list or tree. */
+  .row {
+    @apply flex w-full items-center gap-2 rounded px-2 py-[5px] text-left text-sm
+           text-ink-muted transition-colors;
+  }
+  .row:hover {
+    @apply bg-raised text-ink;
+  }
+  .row[aria-selected='true'],
+  .row[data-selected='true'] {
+    @apply bg-accent-soft text-ink;
+  }
+
+  .divider {
+    @apply border-t border-line;
+  }
+
+  /* Status pill. Always paired with a glyph or word, never colour alone. */
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-sm border px-1.5 py-[1px]
+           text-2xs font-medium;
+  }
+
+  .kbd {
+    @apply inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-sm
+           border border-line-strong bg-raised px-1 font-mono text-2xs text-ink-faint;
+  }
+}
+
+/* Skip link: visible only when focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgb(var(--surface));
+  border: 1px solid rgb(var(--accent));
+  border-radius: 5px;
+}

@@ -1,0 +1,27 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+
+# Machine-specific paths and secrets
+.env
+.env.local
+.env*.local
+
+# Never commit vault content or runtime data
+*.sqlite
+*.sqlite-journal
+*.db
+/data/
+
+# Runtime state written by the launcher
+.server.pid
+devserver.log
+devserver.err.log
+launcher-test.log
+
+.DS_Store
+Thumbs.db
+*.log
