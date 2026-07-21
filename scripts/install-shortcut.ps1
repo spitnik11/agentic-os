@@ -57,15 +57,27 @@ function New-Shortcut {
         [string] $Path,
         [string] $ScriptName,
         [string] $Description,
-        [string] $Arguments = ''
+        [string] $Arguments = '',
+        # Launch through WScript so no console window ever appears. A shortcut
+        # pointing at powershell.exe always shows one, and even -WindowStyle
+        # Hidden flashes it briefly before hiding. Errors still reach the user:
+        # the script switches to message boxes when it has no console.
+        [switch] $NoConsole
     )
 
     $sc = $shell.CreateShortcut($Path)
-    $sc.TargetPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 
-    $scriptPath = Join-Path $AppRoot "scripts\$ScriptName"
-    $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
-    if ($Arguments) { $argList += " $Arguments" }
+    if ($NoConsole) {
+        $vbs = Join-Path $AppRoot 'scripts\launch-hidden.vbs'
+        $sc.TargetPath = "$env:SystemRoot\System32\wscript.exe"
+        $argList = "`"$vbs`""
+        if ($Arguments) { $argList += " $Arguments" }
+    } else {
+        $sc.TargetPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $scriptPath = Join-Path $AppRoot "scripts\$ScriptName"
+        $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+        if ($Arguments) { $argList += " $Arguments" }
+    }
 
     $sc.Arguments        = $argList
     $sc.WorkingDirectory = $AppRoot
@@ -81,20 +93,20 @@ Write-Host ''
 Write-Host '  Installing Agentic OS shortcuts' -ForegroundColor White
 Write-Host ''
 
-New-Shortcut -Path $startLink -ScriptName 'start-desktop.ps1' `
+New-Shortcut -Path $startLink -ScriptName 'start-desktop.ps1' -NoConsole `
     -Description 'Open Agentic OS - a visual command center for your Obsidian vault'
 
 New-Shortcut -Path $stopLink -ScriptName 'stop-app.ps1' `
     -Description 'Stop the Agentic OS server'
 
-New-Shortcut -Path $webLink -ScriptName 'start-desktop.ps1' -Arguments '-Web' `
+New-Shortcut -Path $webLink -ScriptName 'start-desktop.ps1' -Arguments '-Web' -NoConsole `
     -Description 'Open Agentic OS in a web browser instead of the app window'
 
 if ($StartMenu) {
     if (-not (Test-Path $startMenuDir)) {
         New-Item -ItemType Directory -Path $startMenuDir -Force | Out-Null
     }
-    New-Shortcut -Path $menuLink -ScriptName 'start-desktop.ps1' `
+    New-Shortcut -Path $menuLink -ScriptName 'start-desktop.ps1' -NoConsole `
         -Description 'Open Agentic OS - a visual command center for your Obsidian vault'
 }
 

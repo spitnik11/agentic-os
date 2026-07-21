@@ -20,6 +20,9 @@ in its own window — not a browser tab.
 
 The launcher installs dependencies if they are missing, rebuilds when the source
 has changed, and focuses the existing window rather than starting a second copy.
+It runs with **no console window** — the shortcut goes through
+`scripts/launch-hidden.vbs`, which starts PowerShell hidden. Because there is
+then no console to read, setup problems are reported in a message box instead.
 
 Quitting the window shuts the background server down with it, so **Stop Agentic
 OS** is only needed for browser mode.

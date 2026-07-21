@@ -17,7 +17,12 @@
 
 [CmdletBinding()]
 param(
-    [switch] $Web
+    [switch] $Web,
+
+    # Set when launched from the desktop shortcut, which runs this with no
+    # console attached. Progress output goes nowhere, so problems are reported
+    # in a message box instead of to a window nobody can see.
+    [switch] $Silent
 )
 
 $ErrorActionPreference = 'Stop'
@@ -32,8 +37,31 @@ if ($Web) {
 function Write-Step { param($m) Write-Host "  $m" -ForegroundColor Gray }
 function Write-Good { param($m) Write-Host "  $m" -ForegroundColor Green }
 
+# Suppress progress chatter when there is no console to print it to.
+# This must come *after* the definitions above: PowerShell keeps the last
+# definition of a function name, so overriding first would have no effect.
+if ($Silent) {
+    function Write-Step { param($m) }
+    function Write-Good { param($m) }
+}
+
 function Stop-WithMessage {
     param([string] $Title, [string[]] $Lines)
+
+    if ($Silent) {
+        # No console exists, so a failure would otherwise be completely
+        # invisible: the user double-clicks the icon and nothing happens.
+        $body = ($Lines -join "`r`n")
+        try {
+            $wshell = New-Object -ComObject WScript.Shell
+            # 16 = critical icon, 0 = OK button only.
+            $null = $wshell.Popup($body, 0, "Agentic OS - $Title", 16)
+        } catch {
+            # If even that fails there is nothing useful left to try.
+        }
+        exit 1
+    }
+
     Write-Host ''
     Write-Host "  $Title" -ForegroundColor Red
     Write-Host ''
@@ -49,11 +77,13 @@ function Stop-WithMessage {
     exit 1
 }
 
-Clear-Host
-Write-Host ''
-Write-Host '  Agentic OS' -ForegroundColor White
-Write-Host '  Starting the desktop application...' -ForegroundColor DarkGray
-Write-Host ''
+if (-not $Silent) {
+    Clear-Host
+    Write-Host ''
+    Write-Host '  Agentic OS' -ForegroundColor White
+    Write-Host '  Starting the desktop application...' -ForegroundColor DarkGray
+    Write-Host ''
+}
 
 # --- Prerequisites ------------------------------------------------------------
 
@@ -155,12 +185,15 @@ for ($i = 0; $i -lt 60; $i++) {
     if ($win) { $appeared = $true; break }
 }
 
-Write-Host ''
 if ($appeared) {
-    Write-Good 'Agentic OS is open.'
-    Write-Host ''
-    Write-Host '  The window runs independently; this console can close.' -ForegroundColor DarkGray
-    Start-Sleep -Seconds 3
+    if (-not $Silent) {
+        Write-Host ''
+        Write-Good 'Agentic OS is open.'
+        Write-Host ''
+        Write-Host '  The window runs independently; this console can close.' -ForegroundColor DarkGray
+        Start-Sleep -Seconds 3
+    }
+    exit 0
 } else {
     Stop-WithMessage 'The window did not appear.' @(
         'The application may have reported a configuration problem in a dialog.'
